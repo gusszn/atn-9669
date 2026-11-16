@@ -1,31 +1,10 @@
-# My Life — ADHD Dashboard V2
+# ADHD Life Dashboard V4
 
-This is a standalone Progressive Web App (PWA) starter.
+Adds:
+- Custom weekly habit targets such as 3, 4, or 5 days/week.
+- Weekly goal progress (e.g. 3/4 days).
+- Optional one streak freeze per week.
+- Freeze/rest-day indicator (🛟) so a missed day can be bridged without destroying momentum.
+- Streak milestone motivation at 3, 5, 7, 14, 21, and 30 days.
 
-## What is included
-- Today dashboard
-- Brain dump
-- Time estimates
-- Energy levels
-- "I'm Stuck" mode
-- Quick wins
-- Make Smaller starter steps
-- Goals and next actions
-- Done/progress view
-- Export/import backup
-- PWA manifest
-- Offline service worker
-- App icons
-
-## Important
-V2 stores data locally on the device. This means the same data does NOT automatically sync between devices yet.
-
-For true multi-device sync:
-1. Create a Supabase project.
-2. Add authentication.
-3. Create a tasks/goals database with Row Level Security.
-4. Replace localStorage operations in index.html with Supabase calls.
-5. Host the PWA over HTTPS (GitHub Pages is one simple option).
-6. Install the PWA on each device.
-
-Do not put sensitive information in a public GitHub repository.
+The dashboard remains local-browser storage for now. Cloud sync/authentication is the next build step.

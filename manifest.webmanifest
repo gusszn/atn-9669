@@ -1,24 +1,20 @@
 {
-  "name": "My Life \u2014 ADHD Dashboard",
-  "short_name": "My Life",
+  "name": "ADHD Life Dashboard",
+  "short_name": "ADHD Dashboard",
   "start_url": "./",
-  "scope": "./",
   "display": "standalone",
-  "background_color": "#f6f5f1",
-  "theme_color": "#66755f",
-  "description": "A low-friction ADHD life dashboard for brain dumps, tiny next actions, time estimates and paralysis mode.",
+  "background_color": "#f6f4ef",
+  "theme_color": "#171717",
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "./icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "./icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }

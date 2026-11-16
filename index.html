@@ -16,6 +16,28 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .rest{font-size:12px;color:#6b655d;background:#f5f2ec;border-radius:8px;padding:5px 8px}.goal-badge{font-size:11px;padding:5px 8px;border-radius:999px;background:#eeeaff;color:#5148a5;font-weight:750}
 .modal{position:fixed;inset:0;background:rgba(20,18,15,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:5}.modal.open{display:flex}.modalbox{background:#fff;border-radius:20px;padding:20px;width:min(500px,100%);box-shadow:0 20px 70px rgba(0,0,0,.2)}.modalbox h3{margin-top:0}
 @media(max-width:760px){.grid{grid-template-columns:1fr}.app{padding:16px 13px 45px}header{align-items:flex-start;flex-direction:column}.nav{width:100%}.nav button{flex:1}.days{gap:3px}.day{height:30px;font-size:10px}}
+
+/* V5 customizable themes */
+:root{--accent:#7c5cff;--accent-soft:rgba(124,92,255,.13);--accent-border:rgba(124,92,255,.32)}
+body.theme-rose{--accent:#d65a7a;--accent-soft:rgba(214,90,122,.13);--accent-border:rgba(214,90,122,.32)}
+body.theme-sage{--accent:#6f8f7a;--accent-soft:rgba(111,143,122,.14);--accent-border:rgba(111,143,122,.34)}
+body.theme-navy{--accent:#4d6fa9;--accent-soft:rgba(77,111,169,.14);--accent-border:rgba(77,111,169,.34)}
+body.theme-terracotta{--accent:#c76b4b;--accent-soft:rgba(199,107,75,.14);--accent-border:rgba(199,107,75,.34)}
+body.theme-gold{--accent:#b58a3b;--accent-soft:rgba(181,138,59,.14);--accent-border:rgba(181,138,59,.34)}
+body.theme-slate{--accent:#65717e;--accent-soft:rgba(101,113,126,.14);--accent-border:rgba(101,113,126,.34)}
+button.primary,.primary{background:var(--accent)!important}
+.nav.active,.chip.active{border-color:var(--accent-border)!important;background:var(--accent-soft)!important}
+.progress > span{background:var(--accent)!important}
+.check.on,.day.checked{background:var(--accent)!important;border-color:var(--accent)!important}
+.streak-pill{background:var(--accent-soft)!important;border-color:var(--accent-border)!important}
+.theme-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+.theme-swatch{border:1px solid var(--border);border-radius:14px;padding:12px;cursor:pointer;background:var(--card);text-align:left}
+.swatch-dot{width:22px;height:22px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:8px}
+.theme-name{font-weight:700}
+.settings-note{font-size:13px;color:var(--muted);line-height:1.45;margin-top:8px}
+.toast-v5{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#171717;color:#fff;padding:11px 15px;border-radius:999px;font-size:13px;z-index:9999;transition:.2s}
+.toast-v5.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
 </style>
 </head>
 <body>
@@ -60,7 +82,21 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <section id="done" class="view"><div class="hero"><h2>Done</h2><p>Proof that you are moving, even on imperfect days.</p></div><div class="card"><div id="doneList"></div></div></section>
 
-<section id="settings" class="view"><div class="hero"><h2>Settings & Backup</h2><p>Your data stays in this browser for now. Export before moving devices.</p></div>
+<section id="settings" class="view">
+<div class="card" style="margin-top:14px">
+  <div class="section-title">🎨 Dashboard appearance</div>
+  <div class="settings-note">Choose an accent color for buttons, progress bars, habit check-ins, and other dashboard highlights. Your choice is saved on this device.</div>
+  <div class="theme-picker" id="themePicker">
+    <button type="button" class="theme-swatch" data-theme="default"><span class="swatch-dot" style="background:#7c5cff"></span><span class="theme-name">Lavender</span></button>
+    <button type="button" class="theme-swatch" data-theme="rose"><span class="swatch-dot" style="background:#d65a7a"></span><span class="theme-name">Rose</span></button>
+    <button type="button" class="theme-swatch" data-theme="sage"><span class="swatch-dot" style="background:#6f8f7a"></span><span class="theme-name">Sage</span></button>
+    <button type="button" class="theme-swatch" data-theme="navy"><span class="swatch-dot" style="background:#4d6fa9"></span><span class="theme-name">Navy</span></button>
+    <button type="button" class="theme-swatch" data-theme="terracotta"><span class="swatch-dot" style="background:#c76b4b"></span><span class="theme-name">Terracotta</span></button>
+    <button type="button" class="theme-swatch" data-theme="gold"><span class="swatch-dot" style="background:#b58a3b"></span><span class="theme-name">Soft Gold</span></button>
+    <button type="button" class="theme-swatch" data-theme="slate"><span class="swatch-dot" style="background:#65717e"></span><span class="theme-name">Slate</span></button>
+  </div>
+</div>
+<div class="hero"><h2>Settings & Backup</h2><p>Your data stays in this browser for now. Export before moving devices.</p></div>
 <div class="card"><div class="row wrap"><button class="btn" onclick="exportData()">Export backup</button><label class="btn secondary">Import backup<input id="importFile" type="file" accept="application/json" style="display:none"></label><button class="btn secondary" onclick="resetData()">Reset dashboard</button></div></div></section>
 </div>
 
@@ -258,4 +294,42 @@ document.getElementById('importFile').addEventListener('change',e=>{let f=e.targ
 function resetData(){if(confirm('Reset all dashboard data? This cannot be undone unless you exported a backup.')){localStorage.removeItem(KEY);location.reload()}}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(b.dataset.view).classList.add('active')})
 renderAll();
-</script></body></html>
+</script>
+<script>
+(function(){
+  const key='adhd_dashboard_theme_v5';
+  function applyTheme(theme){
+    document.body.classList.remove('theme-rose','theme-sage','theme-navy','theme-terracotta','theme-gold','theme-slate');
+    if(theme && theme!=='default') document.body.classList.add('theme-'+theme);
+    localStorage.setItem(key, theme || 'default');
+  }
+  function init(){
+    applyTheme(localStorage.getItem(key) || 'default');
+    document.querySelectorAll('#themePicker [data-theme]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        applyTheme(btn.dataset.theme);
+        showToast('Theme saved ✨');
+      });
+    });
+  }
+  function showToast(msg){
+    const t=document.getElementById('v5toast');
+    if(!t)return;
+    t.textContent=msg;t.classList.add('show');
+    clearTimeout(window.__v5toast);window.__v5toast=setTimeout(()=>t.classList.remove('show'),1400);
+  }
+  window.__v5ShowToast=showToast;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+document.addEventListener('click', function(e){
+  const b=e.target.closest('button');
+  if(!b)return;
+  const label=(b.textContent||'').trim().toLowerCase();
+  if(label==='save habit'||label==='save'){
+    setTimeout(()=>window.__v5ShowToast && window.__v5ShowToast('Habit saved locally ✓'),100);
+  }
+});
+</script>
+<div id="v5toast" class="toast-v5"></div>
+
+</body></html>

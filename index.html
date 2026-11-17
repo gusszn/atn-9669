@@ -151,8 +151,47 @@ button.primary,.primary{background:var(--accent)!important}
 </div></div>
 
 <script>
-const KEY='adhd_dashboard_v4';
-let db=JSON.parse(localStorage.getItem(KEY)||'null')||{tasks:[],goals:[],habits:[]};
+const KEY='adhd_dashboard_v7';
+function normalizeRuntimeData(data){
+  if(!data || typeof data!=='object') return {tasks:[],goals:[],habits:[]};
+  const out={...data};
+  const rawTasks=Array.isArray(out.tasks)?out.tasks:(Array.isArray(out.items)?out.items:[]);
+  out.tasks=rawTasks.map(t=>{
+    if(!t || typeof t!=='object') return null;
+    const title=String(t.title ?? t.name ?? t.text ?? '').trim();
+    if(!title) return null;
+    const time=Number(t.time ?? t.duration ?? t.minutes ?? t.estimatedMinutes ?? 15);
+    const energyRaw=String(t.energy ?? t.energyLevel ?? 'medium').toLowerCase();
+    const priorityRaw=String(t.priority ?? t.type ?? 'should').toLowerCase();
+    return {
+      ...t,
+      id:t.id || crypto.randomUUID(),
+      title,
+      time:isFinite(time)?time:15,
+      energy:['low','medium','high'].includes(energyRaw)?energyRaw:'medium',
+      priority:['must','should','quick'].includes(priorityRaw)?priorityRaw:'should',
+      done:!!t.done
+    };
+  }).filter(Boolean);
+  out.goals=Array.isArray(out.goals)?out.goals:[];
+  out.habits=Array.isArray(out.habits)?out.habits:[];
+  return out;
+}
+function loadRuntimeData(){
+  const keys=['adhd_dashboard_v7','adhd_dashboard_v6','adhd_dashboard_v5','adhd_dashboard_v4','adhd_dashboard_v3'];
+  for(const k of keys){
+    try{
+      const raw=localStorage.getItem(k);
+      if(raw){
+        const data=normalizeRuntimeData(JSON.parse(raw));
+        localStorage.setItem(KEY,JSON.stringify(data));
+        return data;
+      }
+    }catch(e){}
+  }
+  return {tasks:[],goals:[],habits:[]};
+}
+let db=loadRuntimeData();
 
 function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
 function dateKey(d=new Date()){return d.toISOString().slice(0,10)}
@@ -312,7 +351,7 @@ function saveHabit(){
 
 function renderTasks(){
  let el=document.getElementById('todayTasks'),p=db.tasks.filter(t=>!t.done);
- el.innerHTML=p.length?p.map(t=>`<div class="task"><button class="check" onclick="completeTask('${t.id}')"></button><div class="grow"><div class="title">${esc(t.title)}</div><div class="meta">${t.time||15} min · ${t.energy||'medium'} energy</div></div></div>`).join(''):'<div class="empty">No open tasks. Nice. Enjoy the space.</div>';
+ el.innerHTML=p.length?p.map(t=>`<div class="task" data-task-id="${esc(t.id)}"><button class="check" onclick="completeTask('${t.id}')"></button><div class="grow"><div class="title">${esc(t.title)}</div><div class="meta">${t.time||15} min · ${t.energy||'medium'} energy</div></div></div>`).join(''):'<div class="empty">No open tasks. Nice. Enjoy the space.</div>';
 }
 function completeTask(id){let t=db.tasks.find(x=>x.id===id);if(t){t.done=true;t.completed=dateKey();save()}}
 function addBrainTasks(){let lines=document.getElementById('brainText').value.split('\\n').map(x=>x.trim()).filter(Boolean);lines.forEach(title=>db.tasks.push({id:crypto.randomUUID(),title,time:'15',energy:'medium',created:Date.now(),done:false}));document.getElementById('brainText').value='';save()}
@@ -322,7 +361,22 @@ function renderGoals(){let el=document.getElementById('goalList');el.innerHTML=d
 function renderDone(){let el=document.getElementById('doneList'),d=db.tasks.filter(t=>t.done);el.innerHTML=d.length?d.slice().reverse().map(t=>`<div class="task done"><div class="grow"><div class="title">${esc(t.title)}</div><div class="meta">Completed ${t.completed||''}</div></div></div>`).join(''):'<div class="empty">Completed work will show up here.</div>'}
 function findTask(){let e=document.getElementById('stuckEnergy').value,time=Number(document.getElementById('stuckTime').value),o=db.tasks.filter(t=>!t.done&&(t.energy||'medium')===e&&Number(t.time||15)<=time);if(!o.length)o=db.tasks.filter(t=>!t.done&&Number(t.time||15)<=time);let r=document.getElementById('stuckResult');r.style.display='block';r.textContent=o.length?'Do this one: '+o[Math.floor(Math.random()*o.length)].title:'Nothing fits that window yet. Add one tiny task to your Brain Dump.'}
 function exportData(){let b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='adhd-dashboard-backup.json';a.click()}
-document.getElementById('importFile').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();alert('Backup imported.')}catch{alert('That backup could not be read.')}};r.readAsText(f)})
+document.getElementById('importFile').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      db=normalizeRuntimeData(JSON.parse(r.result));
+      localStorage.setItem(KEY,JSON.stringify(db));
+      renderAll();
+      showToast('Backup imported successfully ✓');
+    }catch(err){
+      showToast('That backup could not be imported.');
+    }
+    e.target.value='';
+  };
+  r.readAsText(f);
+})
 function resetData(){if(confirm('Reset all dashboard data? This cannot be undone unless you exported a backup.')){localStorage.removeItem(KEY);location.reload()}}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(b.dataset.view).classList.add('active')})
 renderAll();
@@ -507,63 +561,19 @@ document.addEventListener('click', function(e){
 <script>
 /* V7: inline Today editing + backward-compatible JSON import */
 (function(){
-  const STORAGE_KEYS = ['adhd_dashboard_v7','adhd_dashboard_v6','adhd_dashboard_v5','adhd_dashboard_v4','adhd_dashboard_v3'];
+  const STORAGE_KEYS = ['adhd_dashboard_v7'];
   const ACTIVE_KEY = 'adhd_dashboard_v7';
 
-  function readAnyStore(){
-    for(const key of STORAGE_KEYS){
-      try{
-        const raw=localStorage.getItem(key);
-        if(raw){
-          const data=JSON.parse(raw);
-          if(data && typeof data==='object') return {key,data};
-        }
-      }catch(e){}
-    }
-    return null;
-  }
-
-  function normalizeTask(t){
-    if(!t || typeof t!=='object') return null;
-    const name = String(t.name ?? t.title ?? t.text ?? '').trim();
-    if(!name) return null;
-    const duration = Number(t.duration ?? t.minutes ?? t.estimatedMinutes ?? t.time ?? 15);
-    const energyRaw = String(t.energy ?? t.energyLevel ?? 'medium').toLowerCase();
-    const energy = ['low','medium','high'].includes(energyRaw) ? energyRaw : 'medium';
-    const priorityRaw = String(t.priority ?? t.type ?? 'should').toLowerCase();
-    const priority = ['must','should','quick'].includes(priorityRaw) ? priorityRaw : 'should';
-    return {...t, name, title:t.title ?? name, duration:isFinite(duration)?duration:15, energy, priority};
-  }
-
-  function normalizeData(data){
-    if(!data || typeof data!=='object') return null;
-    const out={...data};
-    if(Array.isArray(out.tasks)) out.tasks=out.tasks.map(normalizeTask).filter(Boolean);
-    else if(Array.isArray(out.items)) out.tasks=out.items.map(normalizeTask).filter(Boolean);
-    else out.tasks=[];
-    if(!Array.isArray(out.habits)) out.habits=[];
-    if(!Array.isArray(out.goals)) out.goals=[];
-    return out;
-  }
-
-  function saveActive(data){
-    localStorage.setItem(ACTIVE_KEY,JSON.stringify(data));
-    // Preserve the prior key as well so an older copy can still be restored.
-    const old=readAnyStore();
-    if(old && old.key !== ACTIVE_KEY) localStorage.setItem(old.key,JSON.stringify(data));
-  }
-
   function getTask(id){
-    const s=readAnyStore(); if(!s)return null;
-    const data=normalizeData(s.data);
-    const task=data.tasks.find(t=>String(t.id)===String(id));
-    return task ? {data,task} : null;
+    const task=db.tasks.find(t=>String(t.id)===String(id));
+    return task ? task : null;
   }
 
   function updateTask(id,patch){
-    const found=getTask(id); if(!found)return false;
-    Object.assign(found.task,patch);
-    saveActive(found.data);
+    const task=getTask(id);
+    if(!task)return false;
+    Object.assign(task,patch);
+    save();
     return true;
   }
 
@@ -598,14 +608,14 @@ document.addEventListener('click', function(e){
       </select>
       <button type="button" class="v7-inline-save">Save</button>
       <button type="button" class="v7-inline-cancel">Cancel</button>`;
-    const time=String(t.duration ?? 15);
+    const time=String(t.time ?? t.duration ?? 15);
     wrap.querySelector('.v7-time').value=['5','15','30','45','60','90'].includes(time)?time:'15';
     wrap.querySelector('.v7-energy').value=['low','medium','high'].includes(String(t.energy))?String(t.energy):'medium';
     wrap.querySelector('.v7-priority').value=['must','should','quick'].includes(String(t.priority))?String(t.priority):'should';
 
     wrap.querySelector('.v7-inline-save').addEventListener('click',()=>{
       updateTask(id,{
-        duration:Number(wrap.querySelector('.v7-time').value),
+        time:Number(wrap.querySelector('.v7-time').value),
         energy:wrap.querySelector('.v7-energy').value,
         priority:wrap.querySelector('.v7-priority').value
       });
@@ -646,41 +656,6 @@ document.addEventListener('click', function(e){
       el.dataset.v7Attached='1';
     });
   }
-
-  // Make V7 the active store on first run, migrating V3/V4/V5/V7 data forward.
-  (function migrate(){
-    const active=localStorage.getItem(ACTIVE_KEY);
-    if(!active){
-      const old=readAnyStore();
-      if(old){
-        const data=normalizeData(old.data);
-        localStorage.setItem(ACTIVE_KEY,JSON.stringify(data));
-      }
-    }
-  })();
-
-  // Compatibility import: intercept the app's file input if it has one, and
-  // normalize imported V5/V4/V3 task arrays before saving.
-  document.addEventListener('change',function(e){
-    const input=e.target;
-    if(!input || input.type!=='file')return;
-    const file=input.files && input.files[0];
-    if(!file || !/json/i.test(file.type) && !/\.json$/i.test(file.name))return;
-    const reader=new FileReader();
-    reader.onload=function(){
-      try{
-        const parsed=JSON.parse(reader.result);
-        const data=normalizeData(parsed);
-        if(!data || !Array.isArray(data.tasks))throw new Error('Invalid dashboard backup');
-        localStorage.setItem(ACTIVE_KEY,JSON.stringify(data));
-        showToast('Backup imported successfully ✓');
-        setTimeout(()=>location.reload(),200);
-      }catch(err){
-        showToast('That backup could not be imported.');
-      }
-    };
-    reader.readAsText(file);
-  });
 
   document.addEventListener('DOMContentLoaded',attachInlineEditors);
   new MutationObserver(attachInlineEditors).observe(document.body,{childList:true,subtree:true});

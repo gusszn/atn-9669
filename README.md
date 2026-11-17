@@ -1,31 +1,25 @@
-# ADHD Life Dashboard V7
+# ADHD Life Dashboard V7 — Fixed
 
-Adds:
-- Custom weekly habit targets such as 3, 4, or 5 days/week.
-- Weekly goal progress (e.g. 3/4 days).
-- Optional one streak freeze per week.
-- Freeze/rest-day indicator (🛟) so a missed day can be bridged without destroying momentum.
-- Streak milestone motivation at 3, 5, 7, 14, 21, and 30 days.
+This fixed V7 build resolves two issues in the previous V7:
 
-The dashboard remains local-browser storage for now. Cloud sync/authentication is the next build step.
+1. The app was still using the V4 storage key at runtime, which could cause imported V5 data and the Today screen to use different data stores.
+2. Today task cards did not expose their task IDs, so the V7 inline editor could not reliably attach.
 
+The fixed build:
+- Uses `adhd_dashboard_v7` as the active runtime store.
+- Migrates V3/V4/V5/V6 data into V7 on startup.
+- Imports V5 JSON backups into the same active V7 store.
+- Adds `Edit details` to Today task cards.
+- Lets you edit probable time, energy, and priority directly from Today.
+- Keeps the existing habit tracker, themes, goals, backup, and PWA features.
 
-## V7 changes
-- Improved the habit-save interaction and added a clear local save confirmation.
-- Added customizable dashboard accent themes: Lavender, Rose, Sage, Navy, Terracotta, Soft Gold, and Slate.
-- Theme preference is saved on the device.
-- V7 is still local-first; cloud sync/auth remains a separate future step.
+## Important
+If you already imported your V5 backup into the previous V7, that backup is not lost. This build reads the existing V7/V6/V5/V4/V3 local storage data and migrates it into the fixed V7 store.
 
-
-## V7 changes
-- Added Edit Task controls.
-- Tasks can be updated after creation for probable time, energy level, priority, and task name.
-- Changes save to the existing local dashboard data store.
-
-
-## V7 changes
-- Added inline editing on the Today screen for probable time, energy level, and priority.
-- Added automatic migration of V3/V4/V5/V6 local dashboard data into the V7 store.
-- Added backward-compatible normalization for common V3/V4/V5/V6 JSON backup task formats.
-- V5/V4 JSON task backups can be imported without manually rebuilding the tasks.
-- V7 remains local-first; cloud sync/auth is still a future step.
+Recommended test:
+1. Open the fixed V7.
+2. Go to Today.
+3. Find an open task.
+4. Click `⚙️ Edit details`.
+5. Change time/energy/priority and click Save.
+6. Refresh the page and confirm the changes remain.

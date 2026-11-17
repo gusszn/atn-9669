@@ -65,7 +65,7 @@ button.primary,.primary{background:var(--accent)!important}
 .v7-inline-select:focus{outline:2px solid var(--accent-border)}
 .v7-inline-save{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:9px;padding:6px 10px;font-size:12px;cursor:pointer}
 .v7-inline-cancel{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:9px;padding:6px 10px;font-size:12px;cursor:pointer}
-.v7-edit-chip{border:1px solid var(--border);background:var(--card);color:var(--muted);border-radius:999px;padding:4px 8px;font-size:11px;cursor:pointer}
+.v7-edit-chip{border:1px solid var(--border);background:var(--card);color:var(--muted);border-radius:999px;padding:4px 8px;font-size:11px;cursor:pointer;white-space:nowrap}
 .v7-edit-chip:hover{border-color:var(--accent);color:var(--text)}
 .v7-editing{outline:1px solid var(--accent-border);border-radius:12px;padding:8px}
 .v7-import-note{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.4}
@@ -589,9 +589,8 @@ document.addEventListener('click', function(e){
   }
 
   function editorFor(id){
-    const found=getTask(id);
-    if(!found)return null;
-    const t=found.task;
+    const t=getTask(id);
+    if(!t)return null;
     const wrap=document.createElement('div');
     wrap.className='v7-inline-controls';
     wrap.innerHTML=`
@@ -638,7 +637,7 @@ document.addEventListener('click', function(e){
       const chip=document.createElement('button');
       chip.type='button';
       chip.className='v7-edit-chip';
-      chip.textContent='⚙️ Edit details';
+      chip.textContent='⚙️ Edit';
       chip.addEventListener('click',()=>{
         if(card.querySelector('.v7-inline-controls'))return;
         const editor=editorFor(id);

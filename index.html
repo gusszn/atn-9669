@@ -418,48 +418,7 @@ document.addEventListener('click', function(e){
 </script>
 <div id="v5toast" class="toast-v5"></div>
 
-
-<div class="edit-modal-backdrop" id="v6EditBackdrop">
-  <div class="edit-modal" role="dialog" aria-modal="true">
-    <h3>Edit task</h3>
-    <div class="sub">Update the task without deleting and recreating it.</div>
-    <div class="edit-grid">
-      <div class="edit-field full">
-        <label for="v6EditName">Task</label>
-        <input id="v6EditName" type="text" autocomplete="off">
-      </div>
-      <div class="edit-field">
-        <label for="v6EditDuration">Probable time</label>
-        <select id="v6EditDuration">
-          <option value="5">5 min</option><option value="15">15 min</option>
-          <option value="30">30 min</option><option value="45">45 min</option>
-          <option value="60">60 min</option><option value="90">90+ min</option>
-        </select>
-      </div>
-      <div class="edit-field">
-        <label for="v6EditEnergy">Energy level</label>
-        <select id="v6EditEnergy">
-          <option value="low">Low 🪫</option>
-          <option value="medium">Medium ⚡</option>
-          <option value="high">High 🔥</option>
-        </select>
-      </div>
-      <div class="edit-field">
-        <label for="v6EditPriority">Priority</label>
-        <select id="v6EditPriority">
-          <option value="must">Must Do</option><option value="should">Should Do</option>
-          <option value="quick">Quick Win</option>
-        </select>
-      </div>
-    </div>
-    <div class="edit-actions">
-      <button type="button" id="v6CancelEdit">Cancel</button>
-      <button type="button" class="save-edit" id="v6SaveEdit">Save changes</button>
-    </div>
-  </div>
-</div>
-
-<script>
+  <script>
 (function(){
   let taskId=null;
 
